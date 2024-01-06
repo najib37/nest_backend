@@ -10,15 +10,94 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  // profile
+  id               String    @id @default(uuid())
+  username         String    @unique
+  email            String    @unique
+  name             String
+  Avatar           String
 
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  Roomadmins       Room[]    @relation("admins")
 
-model user {
-    id  Int   @default(autoincrement()) @id
-    username    String    @unique
-    email     String      @unique
-    name      String
+  Roomowner     Room[]          @relation("RoomOwner")
+  UsersState    UsersState[]    @relation("Blocker")
+  UsersStat     UsersState[]    @relation("Blocked")
 
-    Avatar  String
-
-
+  RoomsMessages RoomsMessages[]
+  RoomUsers     RoomUsers[]
 }
+
+model UsersState {
+  id            String @id @default(uuid())
+  userBlocker   User   @relation("Blocker", fields: [userIdBlocker], references: [id])
+  userIdBlocker String @unique
+  UserBlocked   User   @relation("Blocked", fields: [userIdBlocked], references: [id])
+  userIdBlocked String @unique
+}
+
+//**************** Direct Message Models ******************************************//
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  createdAt  DateTime @default(now())
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  senderId   String
+  receiverId String
+}
+
+//*********************************************************************************//
+
+//**************** Room Chat Models ***********************************************//
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  owner     User     @relation("RoomOwner", fields: [roomOwner], references: [id])
+  roomOwner String
+  admins    User[]   @relation("admins")
+  type      RoomType
+  password  String?
+
+  RoomsMessages RoomsMessages[]
+  RoomUsers     RoomUsers[]
+}
+
+model RoomUsers {
+  userId String
+  roomId String
+  state  RoomUserState
+  user   User          @relation(fields: [userId], references: [id])
+  room   Room          @relation(fields: [roomId], references: [id])
+
+  @@id([userId, roomId])
+}
+
+model RoomsMessages {
+  id           String   @id @default(uuid())
+  content      String
+  senderUserId User     @relation(fields: [senderId], references: [id])
+  senderId     String
+  roomUserId   Room     @relation(fields: [roomId], references: [id])
+  roomId       String
+  createdAt    DateTime @default(now())
+}
+
+enum RoomUserState {
+  NORMAL
+  BANNED
+  MUTED
+  KICKED
+}
+
+enum RoomType {
+  PRIVATEROOM
+  PUBLICROOM
+  PROTECTEDROOM
+}
+
+//*********************************************************************************//

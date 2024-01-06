@@ -1,0 +1,21 @@
+
+# -> all the users
+GET localhost:3000/user/
+
+GET localhost:3000/user/f384722a-920f-4957-9cb3-117076c6d53d
+
+# -> seed all the users at seed.json
+POST localhost:3000/user/
+Content-Type: application/json
+
+< ./seed.json
+
+POST localhost:3001
+
+POST localhost:3000/user/
+Content-Type: application/json
+
+< ./one.json
+# -> trunctate
+
+DELETE localhost:3000/user/all

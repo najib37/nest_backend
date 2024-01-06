@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,39 +7,96 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UserService {
 
+  constructor(
+    private prisma: PrismaService,
+    private logger: Logger = new Logger(UserService.name)
+  ) { }
 
-  constructor(private prisma : PrismaService) { }
-  async create(data: CreateUserDto) : Promise<User> {
-    return await this.prisma.user.create({data,})
+  async create(data: CreateUserDto): Promise<any> {
+    let user: any;
+
+    try {
+      user = await this.prisma.user.createMany(
+        { data }
+      )
+    } catch {
+      this.logger.fatal(`USER: ERROR CREATING USER`)
+    }
+
+    return user;
   }
 
-  async findAll() : Promise<User[]> {
-    return await this.prisma.user.findMany()
+  async findAll(): Promise<any[]> {
+    let users: any[];
+
+    try {
+      users = await this.prisma.user.findMany()
+    } catch {
+      this.logger.fatal(`USER: ERROR FINDING USERS`)
+    }
+
+    return users;
   }
 
-  async findOne(id: number) : Promise<User> {
-    const user = await this.prisma.user.findFirst({where : {id}})
-    console.log('find one called', user)
+  async findOne(id: string): Promise<any> {
+    let user: any;
+
+    try {
+      user = await this.prisma.user.findUnique(
+        {
+          where: {
+            id,
+          },
+        }
+      )
+    } catch {
+      this.logger.fatal(`USER: ERROR FINDING USER`)
+    }
     return user
   }
 
-  async update(id: number, data: UpdateUserDto) : Promise<User> {
-    return await this.prisma.user.update({where : {id}, data})
-  }
+  async update(id: string, data: UpdateUserDto): Promise<any> {
+    let user: any;
 
-  async findOrCreateUser(data : {username : string,
-    Avatar : string, email : string, name : string}) : Promise<User> {
-    let user = await this.prisma.user.findFirst({where : {email : data.email}}) 
-    if (user)
-    {
-      user =  await this.prisma.user.update({where : {id : user.id}, data})
-      return user;
+    try {
+      user = await this.prisma.user.update(
+        {
+          where: {
+            id,
+          },
+          data,
+        }
+      )
+    } catch {
+      this.logger.fatal(`USER: ERROR UPDATING USER`)
     }
-    user = await this.prisma.user.create({data});
     return user;
   }
-  
-  async remove(id: number) : Promise<User>{
-    return this.prisma.user.delete({where : {id}});
+
+  async findOrCreateUser(
+    data: { username: string, Avatar: string, email: string, name: string; }
+  ): Promise<any> {
+    let user = await this.prisma.user.findFirst({
+      where: {
+        email: data.email,
+      },
+    })
+    if (user) {
+      user = await this.prisma.user.update({ where: { id: user.id }, data })
+      return user;
+    }
+    user = await this.prisma.user.create({ data });
+    return user;
+  }
+
+  async remove(id: string): Promise<any> {
+    return this.prisma.user.delete({
+      where: {
+        id,
+      },
+    });
+  }
+  async truncate(): Promise<any> {
+    return this.prisma.user.deleteMany();
   }
 }
