@@ -27,5 +27,5 @@ export class CreateUserDto {
   name: string;
 
   @IsNotEmpty()
-  Avatar: string;
+  avatar: string;
 }

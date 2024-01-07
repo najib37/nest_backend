@@ -19,7 +19,7 @@ export class UserService {
       user = await this.prisma.user.createMany(
         { data }
       )
-    } catch {
+    } catch  {
       this.logger.fatal(`USER: ERROR CREATING USER`)
     }
 
@@ -74,18 +74,28 @@ export class UserService {
   }
 
   async findOrCreateUser(
-    data: { username: string, Avatar: string, email: string, name: string; }
+    data: { username: string, avatar: string, email: string, name: string; }
   ): Promise<any> {
-    let user = await this.prisma.user.findFirst({
-      where: {
-        email: data.email,
-      },
-    })
-    if (user) {
-      user = await this.prisma.user.update({ where: { id: user.id }, data })
-      return user;
+    let user: any;
+
+    try {
+      user = this.prisma.user.upsert({
+        where: {
+          email: data.email,
+        },
+        update: {
+          ...data
+        },
+        create: {
+          ...data
+        }
+      })
+
+    } catch {
+      this.logger.fatal(`USER: ERROR UPDATING USER DATA`);
     }
-    user = await this.prisma.user.create({ data });
+    this.logger.debug(data);
+    this.logger.debug(user);
     return user;
   }
 
@@ -97,6 +107,6 @@ export class UserService {
     });
   }
   async truncate(): Promise<any> {
-    return this.prisma.user.deleteMany();
+    return this.prisma.user.deleteMany(); // debug only
   }
 }

@@ -16,7 +16,7 @@ model User {
   username         String    @unique
   email            String    @unique
   name             String
-  Avatar           String
+  avatar           String
 
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
