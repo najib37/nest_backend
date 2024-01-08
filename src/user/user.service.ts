@@ -12,22 +12,36 @@ export class UserService {
     private logger: Logger = new Logger(UserService.name)
   ) { }
 
-  async create(data: CreateUserDto): Promise<any> {
-    let user: any;
+  async create(data: CreateUserDto): Promise<User> {
+    let user: User;
 
     try {
-      user = await this.prisma.user.createMany(
+      user = await this.prisma.user.create(
         { data }
       )
-    } catch  {
+    } catch {
       this.logger.fatal(`USER: ERROR CREATING USER`)
     }
 
     return user;
   }
 
-  async findAll(): Promise<any[]> {
-    let users: any[];
+  async createMany(data: CreateUserDto): Promise<User[]> { // debug
+    let user;
+
+    try {
+      user = await this.prisma.user.createMany(
+        { data }
+      )
+    } catch {
+      this.logger.fatal(`USER: ERROR CREATING USER`)
+    }
+
+    return user;
+  }
+
+  async findAll(): Promise<User[]> {
+    let users: User[];
 
     try {
       users = await this.prisma.user.findMany()
@@ -38,8 +52,8 @@ export class UserService {
     return users;
   }
 
-  async findOne(id: string): Promise<any> {
-    let user: any;
+  async findOne(id: string): Promise<User> {
+    let user: User;
 
     try {
       user = await this.prisma.user.findUnique(
@@ -55,8 +69,8 @@ export class UserService {
     return user
   }
 
-  async update(id: string, data: UpdateUserDto): Promise<any> {
-    let user: any;
+  async update(id: string, data: UpdateUserDto): Promise<User> {
+    let user: User;
 
     try {
       user = await this.prisma.user.update(
@@ -75,8 +89,8 @@ export class UserService {
 
   async findOrCreateUser(
     data: { username: string, avatar: string, email: string, name: string; }
-  ): Promise<any> {
-    let user: any;
+  ): Promise<User> {
+    let user;
 
     try {
       user = this.prisma.user.upsert({
@@ -90,23 +104,23 @@ export class UserService {
           ...data
         }
       })
-
     } catch {
       this.logger.fatal(`USER: ERROR UPDATING USER DATA`);
     }
-    this.logger.debug(data);
+    // Prisma.Cl
+    this.logger.debug(data); // debug !
     this.logger.debug(user);
     return user;
   }
 
-  async remove(id: string): Promise<any> {
+  async remove(id: string): Promise<User> {
     return this.prisma.user.delete({
       where: {
         id,
       },
     });
   }
-  async truncate(): Promise<any> {
+  async truncate(): Promise<any> { // debug
     return this.prisma.user.deleteMany(); // debug only
   }
 }
