@@ -5,10 +5,11 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule} from '@nestjs/config'
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from './user/user.module';
+import { ImagesRepoModule } from './images-repo/images-repo.module';
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal : true,
-  }),AuthModule,  UserModule],
+  }),AuthModule,  UserModule, ImagesRepoModule],
   controllers: [AppController],
   providers: [AppService],
 })
