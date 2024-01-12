@@ -15,34 +15,34 @@ export class UserService {
   async create(data: CreateUserDto): Promise<User> {
     let user: User;
 
-    // try {
+    try {
       user = await this.prisma.user.create(
         { data }
       )
-    // } catch(err) {
-    //   this.logger.fatal(`USER: ERROR CREATING USER`)
-    //   // this.logger.error(err)
-    //   // throw new HttpException({
-    //   //   status: HttpStatus.FORBIDDEN,
-    //   //   error: 'This is a custom message',
-    //   // }, HttpStatus.FORBIDDEN, {
-    //   //   cause: "ana"
-    //   // });
-    // }
+    } catch(err) {
+      this.logger.fatal(`USER: ERROR CREATING USER`)
+      // this.logger.error(err)
+      // throw new HttpException({
+      //   status: HttpStatus.FORBIDDEN,
+      //   error: 'This is a custom message',
+      // }, HttpStatus.FORBIDDEN, {
+      //   cause: "ana"
+      // });
+    }
     return user;
   }
 
   async createMany(data: CreateUserDto[]): Promise<User[]> { // debug
     let user;
 
-    // try {
+    try {
       user = await this.prisma.user.createMany(
         { data }
       )
-    // } catch {
-    //   // console.log(err);
-    //   this.logger.fatal(`USER: ERROR CREATING USER here`)
-    // }
+    } catch {
+      // console.log(err);
+      this.logger.fatal(`USER: ERROR CREATING USER here`)
+    }
 
     return user;
   }
@@ -89,7 +89,8 @@ export class UserService {
           data,
         }
       )
-    } catch {
+    } catch(err) {
+      console.log(err)
       this.logger.fatal(`USER: ERROR UPDATING USER`)
     }
     return user;

@@ -32,6 +32,7 @@ export class AuthService  {
 
     async loginOtp(token : string, user : User) {
         console.log(token)
+        console.log(user)
         // first get the jwt token that was assigned in the login 
         const isCodeValid = await this.isTwoFactorAuthenticationCodeValid(
             token, user

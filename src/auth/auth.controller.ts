@@ -136,7 +136,7 @@ export class AuthController {
     @Post('2fa/turn-on')
     @UseGuards(JwtGuard)
     async turnOnTwoFactAuth(@Req() req, @Res({ passthrough: true })  res,@Body() body) {
-        console.log(req)
+        //console.log(req)
         const user = await this.userservice.findOne(req.user.sub);
         const isCodeValid = await this.authservice.isTwoFactorAuthenticationCodeValid(
           body.twoFactorAuthenticationCode,
@@ -151,9 +151,8 @@ export class AuthController {
         }
         // only if the code is right 
         // if (user.twoFactorEnabled == false) {
-        await this.userservice.update(req.user.sub, {twoFactorEnabled: true})
-        console.log("here is the user id  >  : ",user.id)
-        return {valid : true}
+      await this.userservice.update(req.user.sub, {twoFactorEnabled: true})
+      return {valid : true}
     }
     
 
@@ -171,6 +170,7 @@ export class AuthController {
     @UseGuards(JwtGuard)
     @Post('otp')
     async LoginOtp(@Req() req, @Body('twoFactorAuthenticationCode') token : string) {
+      console.log(req.user.sub);
       const user = await this.userservice.findOne(req.user.sub);
       return this.authservice.loginOtp(token, user)
     }

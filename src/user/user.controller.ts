@@ -1,16 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseFilters } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseFilters, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
+import { PARAMTYPES_METADATA } from '@nestjs/common/constants';
+import { JwtGuard } from 'src/auth/guard/jwt.guards';
+import { AuthGuard } from '@nestjs/passport';
 
 type QueryType = {
   [key: string]: string[],
 }
 
 @Controller('user')
-@UseFilters(PrismaErrorsFilter)
-@UseFilters(PrismaErrorsFilter)
+// @UseFilters(PrismaErrorsFilter)
+// @UseFilters(PrismaErrorsFilter)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -19,7 +22,8 @@ export class UserController {
     return this.userService.createMany(createUserDto);
   }
 
-  @Post()
+  @UseGuards(JwtGuard)
+  @Post('')
   create(@Body() createUserDto: CreateUserDto) {
     console.log("body = " , createUserDto);
     return this.userService.create(createUserDto);

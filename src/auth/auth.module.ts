@@ -8,10 +8,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from './strategy/googleStrategy';
+import { JwtGuard } from './guard/jwt.guards';
 
 @Module({
   imports: [UserModule, JwtModule.register({
-    secret : process.env.SECRET,
+    secret : "this is the secret temp", // debug
     signOptions : {expiresIn : '7d'},
   })],
   controllers: [AuthController], 

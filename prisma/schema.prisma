@@ -18,6 +18,11 @@ model User {
   name             String
   avatar           String
 
+
+  // to be determined
+  twoFactorEnabled Boolean @default(false)
+  twoFactor        String?
+
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   Roomadmins       Room[]    @relation("admins")

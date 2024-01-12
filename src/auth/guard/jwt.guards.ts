@@ -5,7 +5,6 @@ import { JwtService } from "@nestjs/jwt";
 import { AuthGuard } from "@nestjs/passport";
 
 @Injectable()
-
 export class JwtGuard extends AuthGuard('jwt') {
     constructor(private jwtService : JwtService, 
         private config : ConfigService    
@@ -17,9 +16,12 @@ export class JwtGuard extends AuthGuard('jwt') {
         const request = context.switchToHttp().getRequest()
         const accessToken = request.cookies['jwt']
         if (!accessToken)
+        {
             throw new UnauthorizedException()
-        try { 
-            const payload  = await this.jwtService.verifyAsync(accessToken, {
+        }
+        try {
+            // console.log(this.jwtService)
+            const payload  = this.jwtService.verifyAsync(accessToken, {
                 secret : this.config.get<string>('SECRET')
             })
             // 💡 We're assigning the payload to the request object here
@@ -27,7 +29,8 @@ export class JwtGuard extends AuthGuard('jwt') {
             request['user'] = payload;
 
         }
-        catch {
+        catch(err) {
+            console.log(err)
             throw new UnauthorizedException()
         }
         return true;
