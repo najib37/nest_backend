@@ -1,11 +1,11 @@
 
 # -> all the users
-GET localhost:3000/user/
+GET localhost:3000/user/all
 
-GET localhost:3000/user/f384722a-920f-4957-9cb3-117076c6d53d
+GET localhost:3000/user/ddfaed52-f168-4644-926c-41538a790bb2
 
 # -> seed all the users at seed.json
-POST localhost:3000/user/
+POST localhost:3000/user/lot
 Content-Type: application/json
 
 < ./seed.json

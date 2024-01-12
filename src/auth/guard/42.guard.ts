@@ -2,7 +2,6 @@ import { Injectable , ExecutionContext } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
 
-import { Request } from 'express';
 
 @Injectable()
 export class FortyTwoGuard extends AuthGuard('42') {

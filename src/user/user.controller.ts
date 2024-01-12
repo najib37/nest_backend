@@ -1,16 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseFilters } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
 
 type QueryType = {
-  include?: string[],
-
+  [key: string]: string[],
 }
 
 @Controller('user')
+@UseFilters(PrismaErrorsFilter)
+@UseFilters(PrismaErrorsFilter)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post('/lot')
+  createMany(@Body() createUserDto: CreateUserDto[]) {
+    return this.userService.createMany(createUserDto);
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -18,22 +25,26 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
+  @Get('/all')
   findAll() {
+    // throw n;
     return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Query() query?: QueryType) {
+  findOne(@Param('id') id: string,  @Req() req, @Query() query?: QueryType) {
     return this.userService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
     return this.userService.update(id, updateUserDto);
   } // not competed yet
 
-  @Delete("/all") // this is very scufed so dont use it
+  @Delete("/all") // this is very scufed so dont use it debug
   truncate() { // dev needs to be deleted
     return this.userService.truncate();
   }

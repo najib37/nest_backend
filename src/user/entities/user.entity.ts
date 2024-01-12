@@ -4,4 +4,7 @@ export class User {
     username : string;
     name : string;
     avatar : string;
+
+    twoFactorEnabled? : boolean;
+    twoFactor?   : string;
 }

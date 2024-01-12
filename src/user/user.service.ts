@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, UseFilters } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -15,27 +15,34 @@ export class UserService {
   async create(data: CreateUserDto): Promise<User> {
     let user: User;
 
-    try {
+    // try {
       user = await this.prisma.user.create(
         { data }
       )
-    } catch {
-      this.logger.fatal(`USER: ERROR CREATING USER`)
-    }
-
+    // } catch(err) {
+    //   this.logger.fatal(`USER: ERROR CREATING USER`)
+    //   // this.logger.error(err)
+    //   // throw new HttpException({
+    //   //   status: HttpStatus.FORBIDDEN,
+    //   //   error: 'This is a custom message',
+    //   // }, HttpStatus.FORBIDDEN, {
+    //   //   cause: "ana"
+    //   // });
+    // }
     return user;
   }
 
-  async createMany(data: CreateUserDto): Promise<User[]> { // debug
+  async createMany(data: CreateUserDto[]): Promise<User[]> { // debug
     let user;
 
-    try {
+    // try {
       user = await this.prisma.user.createMany(
         { data }
       )
-    } catch {
-      this.logger.fatal(`USER: ERROR CREATING USER`)
-    }
+    // } catch {
+    //   // console.log(err);
+    //   this.logger.fatal(`USER: ERROR CREATING USER here`)
+    // }
 
     return user;
   }
@@ -49,6 +56,7 @@ export class UserService {
       this.logger.fatal(`USER: ERROR FINDING USERS`)
     }
 
+    console.log("user = ", users);
     return users;
   }
 
@@ -114,11 +122,17 @@ export class UserService {
   }
 
   async remove(id: string): Promise<User> {
-    return this.prisma.user.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      return this.prisma.user.delete({
+        where: {
+          id,
+        },
+      })
+    } catch {
+      this.logger.fatal(`USER: ERROR DELETING USER DATA`);
+
+
+    }
   }
   async truncate(): Promise<any> { // debug
     return this.prisma.user.deleteMany(); // debug only
