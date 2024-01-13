@@ -1,15 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseFilters, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  Req,
+  UseFilters,
+  UseGuards,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
-import { PARAMTYPES_METADATA } from '@nestjs/common/constants';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
-import { AuthGuard } from '@nestjs/passport';
+import { QueryTypedto } from './dto/query-validation.dto';
+import { ParseQueryPipe } from './parse-query/parse-query.pipe';
 
-type QueryType = {
-  [key: string]: string[],
-}
+// import { QueryType } from './types/QuereyType';
 
 @Controller('user')
 
@@ -29,20 +43,27 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get('/all')
-  findAll() {
-    // throw n;
-    return this.userService.findAll();
+  @Get('/all/')
+  // @UsePipes()
+  findAll(
+    @Query(ValidationPipe, ParseQueryPipe ) query?: QueryTypedto
+  ) {
+    // console.log("hello");
+    return this.userService.findAll(query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string,  @Req() req, @Query() query?: QueryType) {
+  findOne(
+    @Param('id') id: string,
+    @Req() req,
+    @Query() query: QueryTypedto
+  ) {
     return this.userService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto
   ) {
     return this.userService.update(id, updateUserDto);
@@ -54,7 +75,9 @@ export class UserController {
   }
 
   @Delete(':id') 
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id', ParseUUIDPipe) id: string
+  ) {
     return this.userService.remove(id);
   }
 }

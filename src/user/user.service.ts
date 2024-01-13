@@ -1,22 +1,26 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, UseFilters } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from './entities/user.entity';
-import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
+import { SelectUser } from './entities/user-allowed-fields.entity';
+import { FormatQueryType } from './dto/query-validation.dto';
 
 @Injectable()
 
 export class UserService {
 
+  selectUser: SelectUser = new SelectUser;
   constructor(
     private prisma: PrismaService,
-    private logger: Logger = new Logger(UserService.name)
+    private logger: Logger,
   ) { }
 
   async create(data: CreateUserDto): Promise<User> {
     return this.prisma.user.create(
-      { data }
+      {
+        data,
+      }
     )
   }
 
@@ -26,19 +30,22 @@ export class UserService {
     )
   }
 
-  async findAll(): Promise<User[]> {
-    let users: User[];
-
-    return this.prisma.user.findMany()
+  async findAll({ take, skip }: FormatQueryType): Promise<User[]> {
+    console.log(SelectUser);
+    return this.prisma.user.findMany({
+      select: { ...this.selectUser },
+      take,
+      skip,
+      // skip,
+    })
   }
 
   async findOne(id: string): Promise<User> {
     return this.prisma.user.findUnique(
       {
-        where: {
-          id,
-        },
-      }
+        where: { id },
+        select: { ...this.selectUser }
+      },
     )
   }
 
@@ -49,6 +56,7 @@ export class UserService {
           id,
         },
         data,
+        select: { ...this.selectUser }
       }
     )
   }
@@ -56,7 +64,7 @@ export class UserService {
   async findOrCreateUser(
     data: { username: string, avatar: string, email: string, name: string; }
   ): Promise<User> {
-    return  this.prisma.user.upsert({
+    return this.prisma.user.upsert({
       where: {
         email: data.email,
       },
@@ -65,7 +73,8 @@ export class UserService {
       },
       create: {
         ...data
-      }
+      },
+      select: { ...this.selectUser }
     })
   }
 
@@ -76,6 +85,7 @@ export class UserService {
       },
     })
   }
+
 
   async truncate(): Promise<any> { // debug
     return this.prisma.user.deleteMany(); // debug only

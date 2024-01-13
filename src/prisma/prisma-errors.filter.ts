@@ -1,16 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Request, Response } from 'express';
-import { PrismaError } from 'src/prisma/prismaErrorTypes'
-
-interface MyExcp {
-  code: number;
-  message: string;
-}
-
-interface ExcpMap {
-  [key: string]: MyExcp
-}
 
 @Injectable()
 @Catch(PrismaClientKnownRequestError)
