@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -11,6 +11,7 @@ import { ImagesRepoModule } from './images-repo/images-repo.module';
     isGlobal : true,
   }),AuthModule,  UserModule, ImagesRepoModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Logger ],
+  exports: [Logger]
 })
 export class AppModule {}

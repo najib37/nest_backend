@@ -12,8 +12,9 @@ type QueryType = {
 }
 
 @Controller('user')
-// @UseFilters(PrismaErrorsFilter)
-// @UseFilters(PrismaErrorsFilter)
+
+@UseFilters(PrismaErrorsFilter)
+
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -25,7 +26,6 @@ export class UserController {
   @UseGuards(JwtGuard)
   @Post('')
   create(@Body() createUserDto: CreateUserDto) {
-    console.log("body = " , createUserDto);
     return this.userService.create(createUserDto);
   }
 
