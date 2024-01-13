@@ -45,8 +45,9 @@ export class AuthController {
   @UseGuards(FortyTwoGuard)
   @Get('42')
   loginIn(@Req() req) { 
-    // console.log("here is the 42 auth    \n",  req.user.username)
   }
+
+  
   @UseGuards(FortyTwoGuard)
     @Get('42/callback')
     async redirectUser(@Req() req, @Res({ passthrough: true }) res) {
@@ -72,8 +73,6 @@ export class AuthController {
         // res.redirect(env.FRONT_URL);
 
 
-
-        // u need to send the respond manualy 
     }
   
   
@@ -96,13 +95,6 @@ export class AuthController {
 
 
 
-
-  // @UseGuards(JwtGuard)
-  // @Get('isLogged')
-  // async isLoggedIn() {
-  //   return {loggedIn : true}
-  // }
-    // Generate QrCode
     
     @UseGuards(JwtGuard)
     @Get('2fa/generate') // two factor button on 
@@ -122,7 +114,7 @@ export class AuthController {
         // change this when linking with front 
         return `<image src = ${to} ></image>`;
         
-        // res.status(201).json({hamid: "zamel"})
+        // res.status(201).json({hamid: "rajol"})
         // return user;
         // console.log(secret);
         // const updateSecret = this.userservice.updateSecret(/*user id && secret */);
@@ -136,7 +128,6 @@ export class AuthController {
     @Post('2fa/turn-on')
     @UseGuards(JwtGuard)
     async turnOnTwoFactAuth(@Req() req, @Res({ passthrough: true })  res,@Body() body) {
-        //console.log(req)
         const user = await this.userservice.findOne(req.user.sub);
         const isCodeValid = await this.authservice.isTwoFactorAuthenticationCodeValid(
           body.twoFactorAuthenticationCode,
@@ -150,9 +141,8 @@ export class AuthController {
           throw new UnauthorizedException("Wrong Auth Code")
         }
         // only if the code is right 
-        // if (user.twoFactorEnabled == false) {
-      await this.userservice.update(req.user.sub, {twoFactorEnabled: true})
-      return {valid : true}
+        await this.userservice.update(req.user.sub, {twoFactorEnabled: true})
+        return {valid : true}
     }
     
 

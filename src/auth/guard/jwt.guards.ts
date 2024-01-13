@@ -20,17 +20,17 @@ export class JwtGuard extends AuthGuard('jwt') {
             throw new UnauthorizedException()
         }
         try {
-            // console.log(this.jwtService)
-            const payload  = this.jwtService.verifyAsync(accessToken, {
+            const payload  = await this.jwtService.verifyAsync(accessToken, {
                 secret : this.config.get<string>('SECRET')
             })
             // 💡 We're assigning the payload to the request object here
             // so that we can access it in our route handlers
             request['user'] = payload;
-
+            
         }
         catch(err) {
-            console.log(err)
+            // console.log(err)
+            console.log("here");
             throw new UnauthorizedException()
         }
         return true;
