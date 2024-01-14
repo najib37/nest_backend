@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import * as fs from 'fs';
 import * as path from 'path';
 import { Response } from "express"
 
@@ -12,7 +11,8 @@ export class ImagesRepoService {
 
   getImageById( res: Response, bucket: string, imageName : string) {
 
-    const hackedPath = path.join(__dirname, "../../upload/" , bucket, imageName) // debug change it to the env
-    res.sendFile(hackedPath);
+    const fallbackPath = path.normalize(path.join(__dirname, '../../upload', bucket,imageName ))
+    const Path = process.env.ROOT || fallbackPath;
+    res.sendFile(Path);
   }
 }

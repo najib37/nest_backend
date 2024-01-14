@@ -12,11 +12,6 @@ export class ImagesRepoController {
     private readonly userService: UserService
   ) { }
 
-  @Get()
-  getHello(): string {
-    return "hello"
-  }
-
   @Post('/avatar/:userId')
   @UsePipes(ParseFilePipe)
   @UseInterceptors(
@@ -25,7 +20,10 @@ export class ImagesRepoController {
       { storage: new MyCustomStorageEngine("/upload/avatar/") }
     )
   )
-  uploadAvatar(@Param('userId') userId: string, @UploadedFile() file: Express.Multer.File) {
+  uploadAvatar(
+    @Param('userId') userId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
     return this.userService.update(userId, { avatar: file.path })
   }
 
@@ -37,7 +35,10 @@ export class ImagesRepoController {
       { storage: new MyCustomStorageEngine("/upload/background/") }
     )
   )
-  uploadBackGround(@Param('userId') userId: string, @UploadedFile() file: Express.Multer.File) {
+  uploadBackGround(
+    @Param('userId') userId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
     return this.userService.update(userId, { avatar: file.path })
   }
 
