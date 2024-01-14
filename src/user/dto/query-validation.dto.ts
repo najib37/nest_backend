@@ -6,14 +6,16 @@ import {
 
 
 export class QueryTypedto {
-  // @IsNumberString()
-  // @IsOptional()
-  [key: string]: string;
+  @IsOptional()
+  @IsNumberString()
+  skip: string;
+
+  @IsOptional()
+  @IsNumberString()
+  take: string;
 }
 
-export class FormatQueryType {
-  skip?: number;
-  take?: number;
-  // : number,
-  // skip: number,
-}
+export type FormatedQueryType = {
+  [Property in keyof Partial<QueryTypedto>]: number;
+};
+

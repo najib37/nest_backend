@@ -7,12 +7,9 @@ import {
   Param,
   Delete,
   Query,
-  Req,
   UseFilters,
   UseGuards,
-  ParseIntPipe,
   ParseUUIDPipe,
-  UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -20,7 +17,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
-import { QueryTypedto } from './dto/query-validation.dto';
+import { FormatedQueryType, QueryTypedto } from './dto/query-validation.dto';
 import { ParseQueryPipe } from './parse-query/parse-query.pipe';
 
 // import { QueryType } from './types/QuereyType';
@@ -39,24 +36,22 @@ export class UserController {
 
   @UseGuards(JwtGuard)
   @Post('')
-  create(@Body() createUserDto: CreateUserDto) {
+  create(
+    @Body(ValidationPipe) createUserDto: CreateUserDto
+  ) {
     return this.userService.create(createUserDto);
   }
 
   @Get('/all/')
-  // @UsePipes()
   findAll(
-    @Query(ValidationPipe, ParseQueryPipe ) query?: QueryTypedto
+    @Query(new ValidationPipe({ expectedType: QueryTypedto }), ParseQueryPipe ) query?: FormatedQueryType 
   ) {
-    // console.log("hello");
     return this.userService.findAll(query);
   }
 
   @Get(':id')
   findOne(
     @Param('id') id: string,
-    @Req() req,
-    @Query() query: QueryTypedto
   ) {
     return this.userService.findOne(id);
   }
@@ -64,7 +59,7 @@ export class UserController {
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto
+    @Body(ValidationPipe) updateUserDto: UpdateUserDto
   ) {
     return this.userService.update(id, updateUserDto);
   } // not competed yet

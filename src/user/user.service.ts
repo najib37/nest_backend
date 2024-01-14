@@ -4,13 +4,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from './entities/user.entity';
 import { SelectUser } from './entities/user-allowed-fields.entity';
-import { FormatQueryType } from './dto/query-validation.dto';
+import { FormatedQueryType } from './dto/query-validation.dto';
 
 @Injectable()
 
 export class UserService {
 
-  selectUser: SelectUser = new SelectUser;
+  private selectUser: SelectUser = new SelectUser
   constructor(
     private prisma: PrismaService,
     private logger: Logger,
@@ -30,13 +30,10 @@ export class UserService {
     )
   }
 
-  async findAll({ take, skip }: FormatQueryType): Promise<User[]> {
-    console.log(SelectUser);
+  async findAll(query?: FormatedQueryType): Promise<User[]> {
     return this.prisma.user.findMany({
       select: { ...this.selectUser },
-      take,
-      skip,
-      // skip,
+      ...query
     })
   }
 
@@ -44,7 +41,7 @@ export class UserService {
     return this.prisma.user.findUnique(
       {
         where: { id },
-        select: { ...this.selectUser }
+        select: { ...this.selectUser },
       },
     )
   }
