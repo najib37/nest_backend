@@ -83,8 +83,60 @@ export class UserService {
     })
   }
 
-
   async truncate(): Promise<any> { // debug
     return this.prisma.user.deleteMany(); // debug only
   }
+
+  async addFriend(userId: string, friendId: string) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        friends: {
+          connect: {
+            id: friendId
+          }
+        }
+      },
+      select: {
+        ...this.selectUser
+      }
+    })
+  }
+
+  async deleteFriend(userId: string, friendId: string) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        friends: {
+          disconnect: {
+            id: friendId
+          }
+        }
+      },
+      select: {
+        ...this.selectUser
+      }
+    })
+  }
+
+  async getAllFriends(userId: string, query: FormatedQueryType) : Promise<User>{
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        friends: {
+          select: {
+            ...this.selectUser
+          },
+          ...query
+        }
+      },
+    })
+  }
 }
+
+
