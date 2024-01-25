@@ -23,7 +23,7 @@ export class SocketJwtGuard extends AuthGuard('jwt') {
       return false;
     }
     try {
-      const payload = await this.jwtService.verify(accessToken, {
+      const payload = await this.jwtService.verifyAsync(accessToken, {
         secret: this.config.get<string>('SECRET')
       })
       client.user = payload;

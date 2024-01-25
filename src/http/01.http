@@ -7,6 +7,7 @@ GET localhost:3000/user/ddfaed52-f168-4644-926c-41538a790bb2
 # -> seed all the users at seed.json
 POST localhost:3000/user/lot
 Content-Type: application/json
+Cookie: "jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhoYXJpayIsInN1YiI6ImFlNGZhYTcxLWQ5YWEtNGY5OC04ZDA0LThiYjhmYjlkMDUxYyIsImlhdCI6MTcwNTI0OTk0NiwiZXhwIjoxNzA1ODU0NzQ2fQ.HnKi1Dc4bdUtT_7O3TXC0TurUGK1dnNFKfnsR4fRc_w"
 
 < ./seed.json
 

@@ -12,6 +12,7 @@ import {
   ParseUUIDPipe,
   ValidationPipe,
   Req,
+  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,6 +21,8 @@ import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { FormatedQueryType, QueryTypedto } from './dto/query-validation.dto';
 import { ParseQueryPipe } from './parse-query/parse-query.pipe';
+import { Response } from 'express';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Controller('user')
 
@@ -27,7 +30,10 @@ import { ParseQueryPipe } from './parse-query/parse-query.pipe';
 @UseGuards(JwtGuard)
 
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly notification: NotificationGateway
+  ) { }
 
   @Post('/lot')
   // @UseGuards(JwtGuard)
@@ -35,7 +41,6 @@ export class UserController {
     return this.userService.createMany(createUserDto);
   }
 
-  // @UseGuards(JwtGuard)
   // @UseGuards(JwtGuard)
   @Post('')
   create(
@@ -46,10 +51,16 @@ export class UserController {
 
   @Get('/all/')
   // @UseGuards(JwtGuard)
-  findAll(
-    @Query(new ValidationPipe({ expectedType: QueryTypedto }), ParseQueryPipe) query?: FormatedQueryType
+  async findAll(
+    @Res() res: Response,
+    @Query(new ValidationPipe({ expectedType: QueryTypedto }), ParseQueryPipe) query?: FormatedQueryType,
   ) {
-    return this.userService.findAll(query);
+    console.log("recieved a request");
+    // setTimeout(async () => {
+      const users = await this.userService.findAll(query);
+      res.status(201).json(users);
+    // }, 10000)
+    // return 
   }
 
   @Get(':id')
@@ -87,19 +98,25 @@ export class UserController {
   @Post('/friends/add/:id')
   addFriend(
     @Req() req,
-    @Param('id',ParseUUIDPipe) friendId: string,
+    @Param('id', ParseUUIDPipe) friendId: string,
   ) {
-    console.log(req.user.sub);
     return this.userService.addFriend(req.user.sub, friendId);
   }
 
   @Post('/friends/add/:id')
   deleteFriend(
     @Req() req,
-    @Param('id',ParseUUIDPipe) friendId: string,
+    @Param('id', ParseUUIDPipe) friendId: string,
   ) {
-    console.log(req.user.sub);
     return this.userService.deleteFriend(req.user.sub, friendId);
+  }
+  @Get('/friends/request/')
+  sendRequest() {
+
+    // const reci = this.userService.findOne('') // find the reciepient
+    console.log("got here");
+    this.notification.sendNotification('User', "not Implemented")
+    return "request sent"
   }
 
   // @UseGuards(JwtGuard)
@@ -108,6 +125,7 @@ export class UserController {
     @Req() req,
     @Query(new ValidationPipe({ expectedType: QueryTypedto }), ParseQueryPipe) query?: FormatedQueryType
   ) {
+
     console.log(req.user.sub);
     return this.userService.getAllFriends(req.user.sub, query);
   }

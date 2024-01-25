@@ -2,23 +2,23 @@
 *** (?) pipes
 *** 
 
-** ( ) the user dtos and validation pipe
+** (x) the user dtos and validation pipe
 
-** ( ) adding the globale guards
+** (x) adding the globale guards
 
-** ( ) protect all the prisma relations
+** (x) protect all the prisma relations
 
-** ( ) type saftey
+** (x) type saftey
 
-** ( ) try generating the uud
+** (x) try generating the uud
 
-** ( ) adding the the media cdn
+** (x) adding the the media cdn
 
-** (-) findone filters
+** (x) findone filters
 
-** (+) dto of a file body
-
-
+** (x) dto of a file body
 
 
-   > atsift name f avatat string otgetiha f name bax tvalidi wax khona how ahadak
+** (x) upload root
+** ( ) config module
+** (x) profile filters tajination

@@ -11,6 +11,7 @@ import { FormatedQueryType } from './dto/query-validation.dto';
 export class UserService {
 
   private selectUser: SelectUser = new SelectUser
+
   constructor(
     private prisma: PrismaService,
     private logger: Logger,
@@ -137,6 +138,5 @@ export class UserService {
       },
     })
   }
+
 }
-
-

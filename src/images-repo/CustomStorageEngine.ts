@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { HttpException, HttpStatus } from "@nestjs/common";
-import {  Request } from "express";
+import { Request } from "express";
 
 
 export class MyCustomStorageEngine implements StorageEngine {
@@ -16,10 +16,7 @@ export class MyCustomStorageEngine implements StorageEngine {
     const fileSize = parseInt(req.headers["content-length"]);
     if (!file.mimetype.includes('image'))
       return cb(
-        new HttpException(
-          { status: HttpStatus.UNPROCESSABLE_ENTITY, error: 'Incorrect Mimetype' },
-          HttpStatus.FORBIDDEN
-        )
+        new HttpException({ status: HttpStatus.UNPROCESSABLE_ENTITY, error: 'Incorrect Mimetype' }, HttpStatus.FORBIDDEN)
       )
     if (fileSize >= 1e6)
       return cb(
