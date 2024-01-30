@@ -1,10 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { Request, Response } from 'express';
+import { Socket } from 'socket.io';
 
 @Injectable()
 @Catch(PrismaClientKnownRequestError)
-export class PrismaErrorsFilter<T> implements ExceptionFilter {
+export class PrismaSocketFilter implements ExceptionFilter {
   private readonly exceptionMap = {
     'P2002': {
       code: HttpStatus.CONFLICT,
@@ -37,25 +37,19 @@ export class PrismaErrorsFilter<T> implements ExceptionFilter {
   }
 
   constructor(
-    private readonly logger: Logger
   ) { }
 
   catch(exception: PrismaClientKnownRequestError, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const ctx = host.switchToWs();
+    const clientSocket: Socket = ctx.getClient();
     const statusCode = this.exceptionMap[exception.code]?.code || HttpStatus.INTERNAL_SERVER_ERROR
     const message = this.exceptionMap[exception.code]?.message || "Internal Server Error"
 
-
-    this.logger.error(exception);
-    response
-      .status(statusCode)
-      .json({
-        statusCode: statusCode,
-        message: message,
-        timestamp: new Date().toISOString(),
-        // path: request.url,
-      });
+    console.log("socket filter");
+    clientSocket.emit('Error', {
+      statusCode: statusCode,
+      message: message,
+      timestamp: new Date().toISOString(),
+    })
   }
 }
