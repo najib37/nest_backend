@@ -4,57 +4,70 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StateType } from './types/StateType';
 import { Notification } from './entities/notification.entity'
+import { SelectNotification } from './entities/notification-allowed-fields-entity';
 
 @Injectable()
 export class NotificationService {
 
+  private selectNotif = new SelectNotification()
+
   constructor(
-    private readonly prisma: PrismaService
-  ) {}
-  create(userId: string, createNotificationDto: CreateNotificationDto) : Promise<Notification>{
-    return this.prisma.notification.create({
+    private readonly prisma: PrismaService,
+  ) {
+  }
+  async create  (
+    senderId: string,
+    recipientId: string,
+    createNotificationDto: CreateNotificationDto
+  ) : Promise<Notification> {
+    return await this.prisma.notification.create({
       data: {
         ...createNotificationDto,
-        state: 'PENDING',
-        // ownerId: userId
+        senderId,
+        recipientId,
       }
     })
   }
 
-  findByState(userId: string, state: StateType): Promise<Notification[]> {
+  findByState(recipientId: string, state: StateType): Promise<Notification[]> {
     return this.prisma.notification.findMany({
       where: {
         state,
-        // ownerId: userId,
-      }
+        recipientId,
+      },
+      select: { ...this.selectNotif }
     });
   }
 
-  findOne(userId: string, notifId: string) : Promise<Notification>{
+  findOne(senderId: string, notifId: string): Promise<Notification> {
     return this.prisma.notification.findUnique({
       where: {
         id: notifId,
-        // ownerId: userId,
-      }
+        senderId,
+      },
+      select: { ...this.selectNotif }
     });
   }
 
-  update(userId: string, notifId: string, updateNotificationDto: UpdateNotificationDto): Promise<Notification>{
+  update(senderId: string, notifId: string, updateNotificationDto: UpdateNotificationDto): Promise<Notification> {
+    console.log("ra dkhel")
     return this.prisma.notification.update({
       where: {
         id: notifId,
-        // ownerId: userId,
+        senderId,
       },
       data: updateNotificationDto,
+      select: { ...this.selectNotif }
     });
   }
 
-  remove(userId: string, notifId: string) : Promise<Notification>{
+  remove(senderId: string, notifId: string): Promise<Notification> {
     return this.prisma.notification.delete({
       where: {
         id: notifId,
-        // ownerId: userId
+        senderId,
       },
+      select: { ...this.selectNotif }
     });
   }
 }

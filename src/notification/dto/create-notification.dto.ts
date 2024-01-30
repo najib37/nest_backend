@@ -4,7 +4,9 @@ export class CreateNotificationDto {
   id?: string;
   type: string;
   content: string;
-  state?: StateType
+  state: StateType;
+  senderId?: string;
+  recipientId?: string;
 }
 
 export type SelectNotifType = {

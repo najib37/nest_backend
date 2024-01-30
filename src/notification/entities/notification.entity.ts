@@ -4,5 +4,7 @@ export class Notification {
   id: string;
   type: string;
   content: string;
-  state: StateType
+  state: StateType;
+  senderId?: string;
+  recipientId?: string;
 }

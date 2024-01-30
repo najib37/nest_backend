@@ -4,81 +4,104 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  WebSocketServer
+  WebSocketServer,
+  OnGatewayInit
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { UseGuards } from '@nestjs/common';
-// import { SocketJwtGuard } from 'src/auth/guard/socketJwt.guards';
+import { UseFilters } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
-import { SocketJwtGuard } from 'src/auth/guard/socketJwt.guards';
+import { PrismaSocketFilter } from 'src/prisma/prisma-errors-socket.filter';
+import { SocketAuthMiddleware } from 'src/auth/socket-auth/socket-auth.middleware';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { AuthSocket } from './types/AuthSocket';
 
+@WebSocketGateway({
+  namespace: 'notification',
+  cors: {
+    origin: true,
+    credentials: true,
+  }
+})
+@UseFilters(PrismaSocketFilter)
 
-@WebSocketGateway({ namespace: 'notification', cors: true })
-@UseGuards(SocketJwtGuard)
-export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
 
-  public connectedSockets :Record<string, Socket> = {}
+  public connectedSockets: Record<string, Socket> = {}
+  private socketAuthMiddleware;
 
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   constructor(
     private readonly notificationService: NotificationService,
-    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+    private readonly config: ConfigService,
   ) {
+    this.socketAuthMiddleware = SocketAuthMiddleware(jwtService, config);
   }
 
-  async handleConnection(client: Socket) {
-    // this.connectedSockets['hharik'] = client;
+  afterInit(client: AuthSocket) {
+    this.server.use(this.socketAuthMiddleware);
   }
 
-  handleDisconnect() {
-    delete this.connectedSockets['hharik'];
-    console.log('notification Client disconnected');
-    // return "hi from server";
+  handleConnection(client: AuthSocket) {
+    console.log(client.user?.sub);
+    this.connectedSockets[client.user?.sub] = client;
+  }
+
+  handleDisconnect(client: AuthSocket) {
+    delete this.connectedSockets[client.user?.sub];
   }
 
   @SubscribeMessage('notification')
-  updateNotif(@MessageBody() notif: CreateNotificationDto) {
-    
-    if (notif.state === 'CLICKED')
-      this.notificationService.remove('sd', notif.id);
-    else if (notif.state === 'READ')
-      this.notificationService.update('xxxx', notif.id, {state: 'READ'})
-    // return this.userService.findAll();
+  async updateNotif(@MessageBody() notif: CreateNotificationDto) {
+
+    if (notif.state === 'CLICKED') {
+      this.notificationService.remove(notif.recipientId, notif.id);
+    }
+    else if (notif.state === 'READ') {
+      await this.notificationService.update(notif.recipientId, notif.id, { state: 'READ' })
+    }
   }
 
   @SubscribeMessage('allPendingNotification')
-  async sendPending(client: Socket) {
-    const notifs = await this.notificationService.findByState('sdc', 'PENDING')
-    console.log(notifs);
+  async sendPending(client: AuthSocket) {
+
+    const recipientId = client.user?.sub;
+
+    console.log("recipientId = ", recipientId);
+    const pendigNotifs = await this.notificationService.findByState(recipientId, 'PENDING')
+    const recipient = this.connectedSockets[client.user?.sub];
+
+    console.log(pendigNotifs)
+    if (recipient)
+      recipient.emit("allPendingNotification", pendigNotifs)
   }
 
-  async sendNotification(type: NotifOriginType, content: string) {
-    // console.log("notification gateway");
-    const notif = await this.notificationService.create('', {
+  async sendNotification(
+    type: NotifOriginType,
+    content: string,
+    senderId: string,
+    recipientId: string
+  ): Promise<boolean> {
+
+    const notif = await this.notificationService.create(senderId, recipientId, {
       type,
       content,
-      state: 'PENDING'
+      state: 'PENDING',
     })
-    
-    console.log(notif);
-    this.server.emit("notification", JSON.stringify({ type: type, content: content }))
+    const recipient = this.connectedSockets[recipientId];
+
+    if (recipient)
+      recipient.emit("notification", notif)
+
+    return notif ? true : false
+  }
+
+  isOnline(userId: string): boolean {
+    return this.connectedSockets[userId] ? true : false;
   }
 }
-
-    // console.log('notification Client connected');
-    // let a = 0;
-    // setInterval(() => {
-    //   client.emit('notification', {
-    //     id: "xmxmxjsnsghsmdhdgewwshsgh",
-    //     type: 'friendRequest',
-    //     content: "haitam server sent",
-    //     state: "PENDING"
-    //   });
-    //   console.log("sent num = ", a);
-    //   a++;
-    // }, 5000)
