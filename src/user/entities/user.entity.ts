@@ -4,6 +4,7 @@ export class User {
   username?: string;
   name?: string;
   avatar?: string;
+  status?: string;
 
   twoFactorEnabled?: boolean;
   twoFactor?: string;

@@ -10,8 +10,7 @@ import {
   UseFilters,
   UseGuards,
   ParseUUIDPipe,
-  ValidationPipe,
-  Req,
+  ValidationPipe, Req,
   Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -21,28 +20,25 @@ import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { FormatedQueryType, QueryTypedto } from './dto/query-validation.dto';
 import { ParseQueryPipe } from './parse-query/parse-query.pipe';
-import { Response } from 'express';
-import { NotificationGateway } from 'src/notification/notification.gateway';
+import { AuthReq } from './types/AuthReq'
+import { query } from 'express';
 
 @Controller('user')
 
 @UseFilters(PrismaErrorsFilter)
-@UseGuards(JwtGuard)
+// @UseGuards(JwtGuard)
 
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly notification: NotificationGateway
   ) { }
 
-  @Post('/lot')
-  // @UseGuards(JwtGuard)
+  @Post('/lot') // debug
   createMany(@Body() createUserDto: CreateUserDto[]) {
     return this.userService.createMany(createUserDto);
   }
 
-  // @UseGuards(JwtGuard)
-  @Post('')
+  @Post() //debug
   create(
     @Body(ValidationPipe) createUserDto: CreateUserDto
   ) {
@@ -50,33 +46,57 @@ export class UserController {
   }
 
   @Get('/all/')
-  // @UseGuards(JwtGuard)
-  async findAll(
-    @Res() res: Response,
-    @Query(new ValidationPipe({ expectedType: QueryTypedto }), ParseQueryPipe) query?: FormatedQueryType,
+  findAll(
+    @Query(
+      new ValidationPipe({
+        expectedType: QueryTypedto,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+      ParseQueryPipe
+    ) { paginationQueries, searchQueries }: FormatedQueryType,
   ) {
     console.log("recieved a request");
-    // setTimeout(async () => {
-      const users = await this.userService.findAll(query);
-      res.status(201).json(users);
-    // }, 10000)
-    // return 
+    return this.userService.findAll(paginationQueries);
+  }
+
+  @Get('/search')
+  async searchUsers(
+    @Query(
+      new ValidationPipe({
+        expectedType: QueryTypedto,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+      ParseQueryPipe
+    ) { paginationQueries }: FormatedQueryType,
+    @Query('username') username?: string,
+  ) {
+    // console.log("recieved request");
+    const users = await this.userService.searchForUsers(paginationQueries, username);
+    console.log(users);
+    return users;
   }
 
   @Get(':id')
-  // @UseGuards(JwtGuard)
   findOne(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
-  // @UseGuards(JwtGuard)
+  @Patch()
   update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDto
+    @Req() req: AuthReq,
+    @Body(
+      new ValidationPipe({
+        expectedType: UpdateUserDto,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      })
+    ) updateUserDto: UpdateUserDto
   ) {
+    const id = req.user.sub;
     return this.userService.update(id, updateUserDto);
   } // not competed yet
 
@@ -85,48 +105,9 @@ export class UserController {
     return this.userService.truncate();
   }
 
-  @Delete(':id')
-  // @UseGuards(JwtGuard)
-  remove(
-    @Param('id', ParseUUIDPipe) id: string
-  ) {
+  @Delete()
+  remove(@Req() req: AuthReq) {
+    const id = req.user.sub;
     return this.userService.remove(id);
-  }
-
-  // >>>>>> frinds routes
-  // @UseGuards(JwtGuard)
-  @Post('/friends/add/:id')
-  addFriend(
-    @Req() req,
-    @Param('id', ParseUUIDPipe) friendId: string,
-  ) {
-    return this.userService.addFriend(req.user.sub, friendId);
-  }
-
-  @Post('/friends/add/:id')
-  deleteFriend(
-    @Req() req,
-    @Param('id', ParseUUIDPipe) friendId: string,
-  ) {
-    return this.userService.deleteFriend(req.user.sub, friendId);
-  }
-  @Get('/friends/request/')
-  sendRequest() {
-
-    // const reci = this.userService.findOne('') // find the reciepient
-    console.log("got here");
-    this.notification.sendNotification('User', "not Implemented")
-    return "request sent"
-  }
-
-  // @UseGuards(JwtGuard)
-  @Get('/friends/all')
-  getAllFriends(
-    @Req() req,
-    @Query(new ValidationPipe({ expectedType: QueryTypedto }), ParseQueryPipe) query?: FormatedQueryType
-  ) {
-
-    console.log(req.user.sub);
-    return this.userService.getAllFriends(req.user.sub, query);
   }
 }

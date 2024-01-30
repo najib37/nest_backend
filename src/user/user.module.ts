@@ -6,9 +6,10 @@ import { AuthModule } from 'src/auth/auth.module';
 import { AuthService } from 'src/auth/authService';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { JwtModule } from '@nestjs/jwt';
-@Global()
+import { NotificationModule } from 'src/notification/notification.module';
+// @Global()
 @Module({
-  imports : [PrismaModule, JwtModule],
+  imports : [PrismaModule,/*  AuthModule, JwtModule, */ NotificationModule],
   controllers: [UserController],
   providers: [UserService],
   exports : [UserService],
