@@ -48,7 +48,8 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   handleConnection(client: AuthSocket) {
-    console.log(client.user?.sub);
+    // console.log(client.user?.sub);
+    // console.log("its me");
     this.connectedSockets[client.user?.sub] = client;
   }
 

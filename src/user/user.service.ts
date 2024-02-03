@@ -12,9 +12,12 @@ import { NotificationGateway } from 'src/notification/notification.gateway';
 export class UserService {
 
   async searchForUsers(paginationQueries: PaginationQueryType, username: string) :Promise<User[]> {
+    if (!username)
+      return [];
     const user: User[] = await this.prisma.user.findMany({
       where: {
         username: {
+          // search: username,
           contains: username,
           mode: 'insensitive'
         }

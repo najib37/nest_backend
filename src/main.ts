@@ -9,6 +9,15 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
+    origin: true , //[
+    //   "",
+    //   "http://165.232.124.219:3000",
+    //   // // "https://api.intra.42.fr",
+    //   // "https://api.intra.42.fr",
+    //   // "https://signin.intra.42.fr",
+    // ],
+    // allowedHeaders: ['content-type', "X-PINGOTHER"],
+    // Access-Control-Allow-Headers: , Content-Type
     credentials: true,
   });
 

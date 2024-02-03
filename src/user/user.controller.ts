@@ -26,7 +26,7 @@ import { query } from 'express';
 @Controller('user')
 
 @UseFilters(PrismaErrorsFilter)
-// @UseGuards(JwtGuard)
+@UseGuards(JwtGuard)
 
 export class UserController {
   constructor(
@@ -82,6 +82,7 @@ export class UserController {
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ) {
+    if (!id) return {};
     return this.userService.findOne(id);
   }
 
@@ -96,7 +97,9 @@ export class UserController {
       })
     ) updateUserDto: UpdateUserDto
   ) {
-    const id = req.user.sub;
+    console.log("patch")
+    const id = req.user?.sub;
+    console.log(id);
     return this.userService.update(id, updateUserDto);
   } // not competed yet
 

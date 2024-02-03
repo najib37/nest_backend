@@ -11,7 +11,7 @@ export class ImagesRepoService {
 
   getImageById( res: Response, bucket: string, imageName : string) {
 
-    const fallbackPath = path.normalize(path.join(__dirname, '../../upload', bucket,imageName ))
+    const fallbackPath = path.normalize(path.join(__dirname, '../../upload', bucket , imageName ))
     const Path = process.env.ROOT || fallbackPath;
     res.sendFile(Path);
   }

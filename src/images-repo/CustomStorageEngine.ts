@@ -29,7 +29,6 @@ export class MyCustomStorageEngine implements StorageEngine {
     // const imageUuid = randomUUID()
     const fileName = randomUUID() + path.extname(file.originalname);
     const imagePath = this.Directory + fileName;
-    console.log(this.Directory);
     fs.mkdirSync("." + this.Directory, { recursive: true });
     let outStream = fs.createWriteStream("." + imagePath)
     console.log(imagePath)
