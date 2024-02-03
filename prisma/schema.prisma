@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -47,14 +48,15 @@ model User {
 }
 
 model Notification {
-  id        String            @id @default(uuid())
-  type      String
-  content   String
-  state     NotificationState @default(PENDING)
-  createdAt DateTime          @default(now()) // use it to delete notif
+  id          String            @id @default(uuid())
+  type        String
+  content     String
+  state       NotificationState @default(PENDING)
+  createdAt   DateTime          @default(now()) // use it to delete notif
+  recipientId String
 
-  owner   User?  @relation("notifications", fields: [ownerId], references: [id])
-  ownerId String
+  sender   User?  @relation("notifications", fields: [senderId], references: [id])
+  senderId String
 }
 
 model UsersState {
