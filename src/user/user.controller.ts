@@ -26,14 +26,14 @@ import { query } from 'express';
 @Controller('user')
 
 @UseFilters(PrismaErrorsFilter)
-@UseGuards(JwtGuard)
+@UseGuards(JwtGuard) // call back cookie google haitam
 
 export class UserController {
   constructor(
     private readonly userService: UserService,
   ) { }
 
-  @Post('/lot') // debug
+  @Post('/lot/') // debug
   createMany(@Body() createUserDto: CreateUserDto[]) {
     return this.userService.createMany(createUserDto);
   }
@@ -60,7 +60,7 @@ export class UserController {
     return this.userService.findAll(paginationQueries);
   }
 
-  @Get('/search')
+  @Get('/search/')
   async searchUsers(
     @Query(
       new ValidationPipe({
@@ -78,12 +78,31 @@ export class UserController {
     return users;
   }
 
+  @Get('/profile/')
+  async getProfile(
+    @Req() req: AuthReq,
+    @Query('username') username?: string,
+  ) {
+    const id = req.user?.sub || '';
+    username = username || '';
+
+    const user = await this.userService.getProfile(username) || 
+      await this.userService.findOne(id);
+    console.log("profile", user);
+    return user;
+  }
+
   @Get(':id')
   findOne(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
+    @Req() req: AuthReq,
   ) {
-    if (!id) return {};
-    return this.userService.findOne(id);
+    console.log("get one user");
+    console.log("url = ", req.headers)
+    // console.log(id);
+    const userId = id || req.user?.sub;
+    if (!userId) return {};
+    return this.userService.findOne(userId);
   }
 
   @Patch()
@@ -97,9 +116,11 @@ export class UserController {
       })
     ) updateUserDto: UpdateUserDto
   ) {
-    console.log("patch")
     const id = req.user?.sub;
-    console.log(id);
+    if (!id)
+      return {};
+    console.log("patch id = ", id)
+    // console.log(id);
     return this.userService.update(id, updateUserDto);
   } // not competed yet
 
@@ -107,6 +128,7 @@ export class UserController {
   truncate() { // dev needs to be deleted
     return this.userService.truncate();
   }
+
 
   @Delete()
   remove(@Req() req: AuthReq) {

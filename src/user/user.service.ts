@@ -11,26 +11,6 @@ import { NotificationGateway } from 'src/notification/notification.gateway';
 
 export class UserService {
 
-  async searchForUsers(paginationQueries: PaginationQueryType, username: string) :Promise<User[]> {
-    if (!username)
-      return [];
-    const user: User[] = await this.prisma.user.findMany({
-      where: {
-        username: {
-          // search: username,
-          contains: username,
-          mode: 'insensitive'
-        }
-      },
-      select: { ...this.selectUser },
-      ...paginationQueries,
-    })
-    return user.map(user => {
-      this.notification.isOnline(user.id) ? user.status = 'online' : user.status = 'offline';
-      return user;
-    });
-  }
-
   private selectUser: SelectUser = new SelectUser
 
   constructor(
@@ -70,9 +50,16 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
+
+    if (!id) {
+      console.log("service here");
+      return {};
+    }
     const user: User = await this.prisma.user.findUnique(
       {
-        where: { id },
+        where: {
+          id : id,
+        },
         select: { ...this.selectUser },
       },
     )
@@ -114,6 +101,33 @@ export class UserService {
     return user;
   }
 
+  async getProfile(username: string): Promise<User> {
+    return this.prisma.user.findUnique({
+      where: {
+        username
+      }
+    })
+  }
+
+  async searchForUsers(paginationQueries: PaginationQueryType, username: string): Promise<User[]> {
+    if (!username)
+      return [];
+    const user: User[] = await this.prisma.user.findMany({
+      where: {
+        username: {
+          // search: username,
+          contains: username,
+          mode: 'insensitive'
+        }
+      },
+      select: { ...this.selectUser },
+      ...paginationQueries,
+    })
+    return user.map(user => {
+      this.notification.isOnline(user.id) ? user.status = 'online' : user.status = 'offline';
+      return user;
+    });
+  }
   async remove(id: string): Promise<User> {
     const user: User = await this.prisma.user.delete({
       where: {
