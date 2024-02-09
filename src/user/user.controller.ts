@@ -116,6 +116,7 @@ export class UserController {
       })
     ) updateUserDto: UpdateUserDto
   ) {
+    console.log(updateUserDto);
     const id = req.user?.sub;
     if (!id)
       return {};

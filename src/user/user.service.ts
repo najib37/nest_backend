@@ -49,7 +49,7 @@ export class UserService {
     });
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string, selectedFields?: Partial<SelectUser>): Promise<User> {
 
     if (!id) {
       console.log("service here");
@@ -60,7 +60,10 @@ export class UserService {
         where: {
           id : id,
         },
-        select: { ...this.selectUser },
+        select: {
+          ...this.selectUser,
+          ...selectedFields,
+        },
       },
     )
     this.notification.isOnline(user.id) ? user.status = 'online' : user.status = 'offline';
