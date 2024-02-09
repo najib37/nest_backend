@@ -1,18 +1,21 @@
-import { Controller, Get,  Param,  ParseFilePipe,  Post, Res ,UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Controller, Get,  Param,  ParseFilePipe,  Post, Req, Res ,UploadedFile, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { ImagesRepoService } from './images-repo.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MyCustomStorageEngine } from './CustomStorageEngine'
 import { UserService } from 'src/user/user.service';
 import { Response } from 'express';
+import { JwtGuard } from 'src/auth/guard/jwt.guards';
+import { AuthReq } from 'src/user/types/AuthReq';
 
 @Controller('upload')
+@UseGuards(JwtGuard)
 export class ImagesRepoController {
   constructor(
     private readonly imagesRepoService: ImagesRepoService,
     private readonly userService: UserService
   ) { }
 
-  @Post('/avatar/:userId')
+  @Post('/avatar/')
   @UsePipes(ParseFilePipe)
   @UseInterceptors(
     FileInterceptor(
@@ -21,13 +24,14 @@ export class ImagesRepoController {
     )
   )
   uploadAvatar(
-    @Param('userId') userId: string,
+    @Req() req: AuthReq,
     @UploadedFile() file: Express.Multer.File
   ) {
+    const userId = req.user.sub || '';
     return this.userService.update(userId, { avatar: file.path })
   }
 
-  @Post('/background/:userId')
+  @Post('/background/')
   @UsePipes(ParseFilePipe)
   @UseInterceptors(
     FileInterceptor(
@@ -36,9 +40,10 @@ export class ImagesRepoController {
     )
   )
   uploadBackGround(
-    @Param('userId') userId: string,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: AuthReq,
   ) {
+    const userId = req.user.sub || '';
     return this.userService.update(userId, { avatar: file.path })
   }
 
