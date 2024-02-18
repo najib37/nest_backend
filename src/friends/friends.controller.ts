@@ -1,4 +1,4 @@
-import { Controller, Get, InternalServerErrorException, Param, ParseUUIDPipe, Post, Query, Req, UseFilters, UseGuards, ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, Controller, Delete, Get, InternalServerErrorException, Param, ParseUUIDPipe, Post, Query, Req, UseFilters, UseGuards, ValidationPipe } from '@nestjs/common';
 import { FriendsService } from './friends.service';
 import { User } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
@@ -8,6 +8,7 @@ import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { AuthReq } from 'src/user/types/AuthReq';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Controller('friends')
 @UseFilters(PrismaErrorsFilter)
@@ -15,41 +16,51 @@ import { AuthReq } from 'src/user/types/AuthReq';
 export class FriendsController {
   constructor(
     private readonly friendsService: FriendsService,
-    private readonly userService: UserService,
-    private readonly notificationGateway: NotificationGateway
+    private readonly notificationGateway: NotificationGateway,
+    private readonly notificationService: NotificationService
   ) { }
 
   @Get('/all')
   getAllFriends(
-    @Req() req : AuthReq,
+    @Req() req: AuthReq,
     @Query(
       new ValidationPipe({ expectedType: QueryTypedto }),
       ParseQueryPipe
     ) { paginationQueries }: FormatedQueryType
   ) {
-    console.log(req.user.sub);
     return this.friendsService.getAllFriends(req.user.sub, paginationQueries);
   }
 
-  @Post('/add/:id')
-  addFriend(
+  @Post(':id')
+  async addFriend(
     @Req() req: AuthReq,
     @Param('id', ParseUUIDPipe) friendId: string,
   ) {
+
+    await Promise.all([
+      this.notificationService.removeRequest(friendId, req.user.sub),
+      this.notificationService.removeRequest(req.user.sub, friendId),
+    ])
     return this.friendsService.addFriend(req.user.sub, friendId);
   }
 
-  @Post('/delete/:id')
-  deleteFriend(
+  @Delete(':id')
+  async deleteFriend(
     @Req() req: AuthReq,
     @Param('id', ParseUUIDPipe) friendId: string,
   ) {
-    return this.friendsService.deleteFriend(req.user.sub, friendId);
+
+    const [friend, friendOf] = await Promise.all([
+      this.friendsService.deleteFriend(friendId, req.user.sub),
+      this.friendsService.deleteFriend(req.user.sub, friendId),
+    ])
+
+    return friend && friendOf;
   }
 
   @Post('/request/:id')
   async sendRequest(
-    @Param('id', ParseUUIDPipe) recipientId : string,
+    @Param('id', ParseUUIDPipe) recipientId: string,
     @Req() req: AuthReq,
   ) {
     const notifState = await this.notificationGateway.sendNotification(
@@ -65,5 +76,49 @@ export class FriendsController {
     return {
       message: "Request Sent Successfully"
     }
+  }
+
+  @Get('/request/:id')
+  async getRequest(
+    @Param('id', ParseUUIDPipe) sendertId: string,
+    @Req() req: AuthReq,
+  ) {
+    const notif = await this.notificationService.findByRerecipient(sendertId, req.user.sub);
+    console.log(notif);
+    return notif;
+  }
+
+  @Delete('/request/:id')
+  async deleteFriendRequest(
+    @Param('id', ParseUUIDPipe) sendertId: string,
+    @Req() req: AuthReq,
+  ) {
+
+    const notif = await this.notificationService.findByRerecipient(sendertId, req.user.sub);
+    if (!notif)
+      return {
+        message: "Unable To Deleted Request"
+      }
+
+    await this.notificationService.remove(notif.id);
+    return {
+      message: "Request Deleted Successfully"
+    };
+  }
+
+  @Get("/check")
+  checkFreind(
+    @Query('id', ParseUUIDPipe) friendId: string,
+    @Req() req: AuthReq,
+  ) {
+    return this.friendsService.isFriends(req.user.sub, friendId)
+  }
+
+  @Get('/state/:id')
+  async checkRequestState(
+    @Param('id', ParseUUIDPipe) friendId: string,
+    @Req() req: AuthReq,
+  ) {
+    return this.notificationService.findByRerecipient(req.user.sub, friendId);
   }
 }
