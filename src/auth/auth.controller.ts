@@ -83,7 +83,7 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @Get('status')
   async userAuthStatus(@Req() req) {
-    const user = await this.userservice.findOne(req.user?.sub, {twoFactorEnabled: true});
+    const user = await this.userservice.findOne(req.user?.sub, { twoFactorEnabled: true });
     return {
       authStatus: 'authorized',
       twoFactor: user.twoFactorEnabled,
@@ -94,9 +94,9 @@ export class AuthController {
 
   //loggingOut
   @UseGuards(JwtGuard)
-  @Delete('logginOut')
-  logout(@Req() req, @Res() res) {
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'strict' });
+  @Delete('logout')
+  logout(@Res() res) {
+    res.clearCookie('jwt', { httpOnly: true }).done();
   }
 
 
@@ -138,7 +138,7 @@ export class AuthController {
   async turnOnTwoFactAuth(@Req() req: AuthReq, @Res({ passthrough: true }) res, @Body() body) {
 
     // console.log(body);
-    const user = await this.userservice.findOne(req.user?.sub, {twoFactor: true});
+    const user = await this.userservice.findOne(req.user?.sub, { twoFactor: true });
     const isCodeValid = await this.authservice.isTwoFactorAuthenticationCodeValid(
       body.twoFactorAuthenticationCode,
       user,

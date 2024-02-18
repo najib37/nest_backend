@@ -9,7 +9,6 @@ export function SocketAuthMiddleware(jwtService: JwtService, config: ConfigServi
 
     const accessToken = cookie?.replace('jwt=', '');
 
-    console.log(client.handshake.headers);
     if (!accessToken) {
       next(new Error("Unauthorized"));
     }
