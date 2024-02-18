@@ -5,21 +5,23 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { StateType } from './types/StateType';
 import { Notification } from './entities/notification.entity'
 import { SelectNotification } from './entities/notification-allowed-fields-entity';
+import { SelectUser } from 'src/user/entities/user-allowed-fields.entity';
 
 @Injectable()
 export class NotificationService {
 
   private selectNotif = new SelectNotification()
+  private selectUser = new SelectUser()
 
   constructor(
     private readonly prisma: PrismaService,
   ) {
   }
-  async create  (
+  async create(
     senderId: string,
     recipientId: string,
     createNotificationDto: CreateNotificationDto
-  ) : Promise<Notification> {
+  ): Promise<Notification> {
     return await this.prisma.notification.create({
       data: {
         ...createNotificationDto,
@@ -29,7 +31,14 @@ export class NotificationService {
     })
   }
 
-  findByState(recipientId: string, state: StateType): Promise<Notification[]> {
+  async findAll(recipientId: string): Promise<Notification[]> {
+    return this.prisma.notification.findMany({
+      where: { recipientId },
+      select: { ...this.selectNotif }
+    });
+  }
+
+  async findByState(recipientId: string, state: StateType): Promise<Notification[]> {
     return this.prisma.notification.findMany({
       where: {
         state,
@@ -39,7 +48,7 @@ export class NotificationService {
     });
   }
 
-  findOne(senderId: string, notifId: string): Promise<Notification> {
+  async findOne(senderId: string, notifId: string): Promise<Notification> {
     return this.prisma.notification.findUnique({
       where: {
         id: notifId,
@@ -49,25 +58,58 @@ export class NotificationService {
     });
   }
 
-  update(senderId: string, notifId: string, updateNotificationDto: UpdateNotificationDto): Promise<Notification> {
-    console.log("ra dkhel")
-    return this.prisma.notification.update({
+  async findByRerecipient(
+    senderId: string,
+    recipientId: string,
+    state?: NotifStateType
+  ): Promise<Notification> {
+    return this.prisma.notification.findFirst({
       where: {
-        id: notifId,
+        recipientId,
         senderId,
+        state,
       },
-      data: updateNotificationDto,
-      select: { ...this.selectNotif }
+      select: {
+        recipient: {
+          select: {
+            ...this.selectUser
+          }
+        },
+        ...this.selectNotif,
+      }
     });
   }
 
-  remove(senderId: string, notifId: string): Promise<Notification> {
+  async removeRequest(senderId: string , recipientId: string) : Promise<boolean> {
+    const notif: Notification = await this.findByRerecipient(senderId, recipientId);
+
+    if (!notif)
+    return false;
+
+    await this.remove(notif.id);
+    return true;
+  }
+
+  async update(notifId: string, updateNotificationDto: UpdateNotificationDto): Promise<Notification> {
+    return this.prisma.notification.update({
+      where: {
+        id: notifId,
+      },
+      data: {
+        ...updateNotificationDto,
+        // state: "READ"
+      },
+      select: {
+        ...this.selectNotif,
+      }
+    });
+  }
+
+  async remove(notifId: string): Promise<Notification> {
     return this.prisma.notification.delete({
       where: {
         id: notifId,
-        senderId,
       },
-      select: { ...this.selectNotif }
     });
   }
 }

@@ -47,7 +47,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     this.server.use(this.socketAuthMiddleware);
   }
 
-  handleConnection(client: AuthSocket) {
+  async handleConnection(client: AuthSocket) {
     // console.log(client.user?.sub);
     // console.log("its me");
     this.connectedSockets[client.user?.sub] = client;
@@ -60,11 +60,16 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   @SubscribeMessage('notification')
   async updateNotif(@MessageBody() notif: CreateNotificationDto) {
 
+
+    console.log("notfi = ", notif);
+    if (notif || notif.id)
+      return ;
+
     if (notif.state === 'CLICKED') {
-      this.notificationService.remove(notif.recipientId, notif.id);
+      await this.notificationService.remove(notif.id);
     }
     else if (notif.state === 'READ') {
-      await this.notificationService.update(notif.recipientId, notif.id, { state: 'READ' })
+      await this.notificationService.update(notif.id, { state: 'READ' })
     }
   }
 
@@ -73,11 +78,9 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
     const recipientId = client.user?.sub;
 
-    console.log("recipientId = ", recipientId);
-    const pendigNotifs = await this.notificationService.findByState(recipientId, 'PENDING')
+    const pendigNotifs = await this.notificationService.findAll(recipientId)
     const recipient = this.connectedSockets[client.user?.sub];
 
-    console.log(pendigNotifs)
     if (recipient)
       recipient.emit("allPendingNotification", pendigNotifs)
   }
@@ -94,6 +97,9 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       content,
       state: 'PENDING',
     })
+
+    console.log("bruuuuuuh");
+    console.log(notif);
     const recipient = this.connectedSockets[recipientId];
 
     if (recipient)

@@ -10,6 +10,6 @@ import { SocketAuthMiddleware } from 'src/auth/socket-auth/socket-auth.middlewar
 @Module({
   imports: [PrismaModule],
   providers: [NotificationGateway, NotificationService],
-  exports: [NotificationGateway]
+  exports: [NotificationGateway, NotificationService]
 })
 export class NotificationModule {}
