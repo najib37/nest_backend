@@ -1,17 +1,11 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "NotificationState" AS ENUM ('READ', 'PENDING', 'CLICKED');
 
-  - You are about to drop the `user` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "RoomUserState" AS ENUM ('NORMAL', 'BANNED', 'MUTED', 'KICKED');
 
 -- CreateEnum
 CREATE TYPE "RoomType" AS ENUM ('PRIVATEROOM', 'PUBLICROOM', 'PROTECTEDROOM');
-
--- DropTable
-DROP TABLE "user";
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -19,9 +13,25 @@ CREATE TABLE "User" (
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "Avatar" TEXT NOT NULL,
+    "avatar" TEXT NOT NULL,
+    "friendId" TEXT,
+    "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "twoFactor" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Notification" (
+    "id" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "state" "NotificationState" NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "senderId" TEXT NOT NULL,
+    "recipientId" TEXT NOT NULL,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -98,6 +108,12 @@ CREATE UNIQUE INDEX "_admins_AB_unique" ON "_admins"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_admins_B_index" ON "_admins"("B");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_friendId_fkey" FOREIGN KEY ("friendId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UsersState" ADD CONSTRAINT "UsersState_userIdBlocker_fkey" FOREIGN KEY ("userIdBlocker") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
