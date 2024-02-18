@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
@@ -20,11 +20,16 @@ model User {
   avatar   String
 
   // friends
+  friends  User[] @relation("friendship")
+  friendOf User[] @relation("friendship")
 
-  friend   User?   @relation("friendship", fields: [friendId], references: [id])
-  friends  User[]  @relation("friendship")
-  friendId String?
+  // Blocklist
+  blocklist User[] @relation("blocked")
+  blockedBy User[] @relation("blocked")
 
+  // Gane player 
+  
+  // player Player? @relation("GamePlayer")
   // to be determined
   twoFactorEnabled Boolean @default(false)
   twoFactor        String?
@@ -45,7 +50,15 @@ model User {
   RoomUsers     RoomUsers[]
   // User          User?           @relation(fields: [userId], references: [id])
   // userId        String?
+
+  //edit blocked users
 }
+
+// model Player {
+//   id String @id @default(uuid())
+//   userId String @unique
+//   user User @relation("GamePlayer", fields: [userId], references: [id])
+// }
 
 model Notification {
   id          String            @id @default(uuid())
@@ -53,11 +66,15 @@ model Notification {
   content     String
   state       NotificationState @default(PENDING)
   createdAt   DateTime          @default(now()) // use it to delete notif
-  recipientId String
 
-  sender   User?  @relation("notifications", fields: [senderId], references: [id])
+  recipient User?  @relation("notifications", fields: [recipientId], references: [id])
+  recipientId String
   senderId String
 }
+
+// model Game {
+//   id String @id @default(uuid())
+// }
 
 model UsersState {
   id            String @id @default(uuid())
