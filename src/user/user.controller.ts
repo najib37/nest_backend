@@ -11,7 +11,6 @@ import {
   UseGuards,
   ParseUUIDPipe,
   ValidationPipe, Req,
-  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,7 +20,6 @@ import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { FormatedQueryType, QueryTypedto } from './dto/query-validation.dto';
 import { ParseQueryPipe } from './parse-query/parse-query.pipe';
 import { AuthReq } from './types/AuthReq'
-import { query } from 'express';
 
 @Controller('user')
 
@@ -78,30 +76,23 @@ export class UserController {
     return users;
   }
 
-  @Get('/profile/')
-  async getProfile(
-    @Req() req: AuthReq,
-    @Query('username') username?: string,
-  ) {
-    const id = req.user?.sub || '';
-    username = username || '';
 
-    const user = await this.userService.getProfile(username) || 
-      await this.userService.findOne(id);
-    console.log("profile", user);
-    return user;
+  @Get()
+  getLoggedUser(@Req() req: AuthReq) {
+    console.log("user request");
+
+    return this.userService.findOne(req.user.sub || '');
+    // throw InternalServerErrorException;
   }
 
   @Get(':id')
   findOne(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe ) userId: string,
     @Req() req: AuthReq,
   ) {
-    console.log("get one user");
-    console.log("url = ", req.headers)
-    // console.log(id);
-    const userId = id || req.user?.sub;
+
     if (!userId) return {};
+
     return this.userService.findOne(userId);
   }
 
@@ -116,7 +107,6 @@ export class UserController {
       })
     ) updateUserDto: UpdateUserDto
   ) {
-    console.log(updateUserDto);
     const id = req.user?.sub;
     if (!id)
       return {};

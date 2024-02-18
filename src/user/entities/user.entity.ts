@@ -8,5 +8,8 @@ export class User {
 
   twoFactorEnabled?: boolean;
   twoFactor?: string;
-  friends?: User[]
+  friends?: User[];
+  friendOf?: User[];
+  blocklist?: User[];
+  blockedBy?: User[];
 }

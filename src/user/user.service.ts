@@ -104,10 +104,14 @@ export class UserService {
     return user;
   }
 
-  async getProfile(username: string): Promise<User> {
+  async findUserByUsername(username: string, selectedFields?: Partial<SelectUser>) : Promise<User> {
     return this.prisma.user.findUnique({
       where: {
         username
+      },
+      select: {
+        ...this.selectUser,
+        ...selectedFields
       }
     })
   }
@@ -125,12 +129,17 @@ export class UserService {
       },
       select: { ...this.selectUser },
       ...paginationQueries,
+      take: 20,
     })
     return user.map(user => {
       this.notification.isOnline(user.id) ? user.status = 'online' : user.status = 'offline';
       return user;
     });
   }
+
+  async blockUserById(userId: string, blockUserId: string) {
+  }
+
   async remove(id: string): Promise<User> {
     const user: User = await this.prisma.user.delete({
       where: {

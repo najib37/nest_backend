@@ -7,6 +7,7 @@ import { AuthService } from 'src/auth/authService';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { JwtModule } from '@nestjs/jwt';
 import { NotificationModule } from 'src/notification/notification.module';
+import { FriendsModule } from 'src/friends/friends.module';
 // @Global()
 @Module({
   imports : [PrismaModule,/*  AuthModule, JwtModule, */ NotificationModule],
