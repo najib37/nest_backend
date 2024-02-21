@@ -81,13 +81,16 @@ export class UserController {
   getLoggedUser(@Req() req: AuthReq) {
     console.log("user request");
 
+    // setTimeout(() => {
+    //   return this.userService.findOne(req.user.sub || '');
+    // }, 100000)
     return this.userService.findOne(req.user.sub || '');
     // throw InternalServerErrorException;
   }
 
   @Get(':id')
   findOne(
-    @Param('id', ParseUUIDPipe ) userId: string,
+    @Param('id', ParseUUIDPipe) userId: string,
     @Req() req: AuthReq,
   ) {
 

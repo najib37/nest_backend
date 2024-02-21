@@ -41,6 +41,8 @@ export class FriendsController {
       this.notificationService.removeRequest(friendId, req.user.sub),
       this.notificationService.removeRequest(req.user.sub, friendId),
     ])
+    if (await this.friendsService.isFriends(req.user.sub, friendId))
+      return {};
     return this.friendsService.addFriend(req.user.sub, friendId);
   }
 

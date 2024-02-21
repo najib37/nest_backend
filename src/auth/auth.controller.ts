@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Logger, Next, Req, Res, UseGuards, Body, UnauthorizedException, HttpCode, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Logger, Next, Req, Res, UseGuards, Body, UnauthorizedException, HttpCode, Delete, UseFilters } from '@nestjs/common';
 import { FortyTwoGuard } from './guard/42.guard';
 import { AuthService } from './authService';
 import { JwtGuard } from './guard/jwt.guards';
@@ -13,12 +13,12 @@ import { JwtService } from '@nestjs/jwt';
 import { strict } from 'assert';
 import { AuthReq } from 'src/user/types/AuthReq';
 import { SelectUser } from 'src/user/entities/user-allowed-fields.entity';
+import {Response} from "express"
+import { AuthfilterFilter } from './authfilter/authfilter.filter';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authservice: AuthService, private readonly userservice: UserService) { }
-
-
 
   // login
 
@@ -75,19 +75,43 @@ export class AuthController {
     // //  Redirect to the frontend
     // res.redirect(env.FRONT_URL);
 
+  }
 
+  @UseGuards(JwtGuard)
+  @UseFilters(AuthfilterFilter)
+  @Get('status')
+  async LogingStatus(@Req() req: AuthReq) {
+
+    const user = await this.userservice.findOne(req.user?.sub, { twoFactorEnabled: true });
+    // console.log("user =", user);
+
+    if (!user)
+      return {}
+
+    return ({
+      message: 'authorized',
+      authorized: true,
+      twoFactor: user.twoFactorEnabled,
+    })
   }
 
 
-
   @UseGuards(JwtGuard)
-  @Get('status')
-  async userAuthStatus(@Req() req) {
+  @Get('/2fa/status')
+  async userAuthStatus(@Res({passthrough: true}) res , @Req() req) {
+
     const user = await this.userservice.findOne(req.user?.sub, { twoFactorEnabled: true });
-    return {
-      authStatus: 'authorized',
+    // console.log("user =", user);
+
+    if (!user)
+      return {}
+
+    console.log("auth controller status");
+    return ({
+      message: 'authorized',
+      authorized: true,
       twoFactor: user.twoFactorEnabled,
-    }
+    })
   }
 
 
@@ -95,8 +119,10 @@ export class AuthController {
   //loggingOut
   @UseGuards(JwtGuard)
   @Delete('logout')
-  logout(@Res() res) {
-    res.clearCookie('jwt', { httpOnly: true }).done();
+  logout(@Res() res: Response) {
+    res.clearCookie('jwt', { httpOnly: true }).status(201).json({
+      message: "Logedout Successfully",
+    });
   }
 
 
