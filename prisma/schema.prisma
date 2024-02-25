@@ -27,10 +27,10 @@ model User {
   blocklist User[] @relation("blocked")
   blockedBy User[] @relation("blocked")
 
-  // Gane player 
-  
-  // player Player? @relation("GamePlayer")
-  // to be determined
+  // Game player 
+  player Player? @relation("Player User Relation")
+
+  // 2factor settingds
   twoFactorEnabled Boolean @default(false)
   twoFactor        String?
 
@@ -48,33 +48,55 @@ model User {
 
   RoomsMessages RoomsMessages[]
   RoomUsers     RoomUsers[]
-  // User          User?           @relation(fields: [userId], references: [id])
-  // userId        String?
-
-  //edit blocked users
 }
 
-// model Player {
-//   id String @id @default(uuid())
-//   userId String @unique
-//   user User @relation("GamePlayer", fields: [userId], references: [id])
-// }
+// ________________________Game_____________________________
 
+model Player {
+  userId String @unique
+  user   User   @relation("Player User Relation", fields: [userId], references: [id], onDelete: Cascade)
+
+  xp    Int
+  level Float
+
+  wonGames  Game[] @relation("won games")
+  lostGames Game[] @relation("lost games")
+
+  @@id([userId])
+}
+
+model Game {
+  id String @id @default(uuid())
+
+  winnerId String
+  winner   Player? @relation("won games", fields: [winnerId], references: [userId])
+
+  loserId String
+  loser   Player? @relation("lost games", fields: [loserId], references: [userId])
+
+  rounds      Int      @default(5)
+  mode        GameMods @default(CLASSIC)
+  isCompleted Boolean  @default(true)
+  createdAt   DateTime @default(now()) // use it to sort
+}
+
+model Achievment {
+  id   String @id @default(uuid())
+  type String @unique // INFO: create the achievment first time an use it on all the player
+}
+
+// ________________________notification______________________
 model Notification {
-  id          String            @id @default(uuid())
-  type        String
-  content     String
-  state       NotificationState @default(PENDING)
-  createdAt   DateTime          @default(now()) // use it to delete notif
+  id        String            @id @default(uuid())
+  type      String
+  content   String
+  state     NotificationState @default(PENDING)
+  createdAt DateTime          @default(now()) // use it to delete notif
 
-  recipient User?  @relation("notifications", fields: [recipientId], references: [id])
+  recipient   User?  @relation("notifications", fields: [recipientId], references: [id], onDelete: Cascade)
   recipientId String
-  senderId String
+  senderId    String
 }
-
-// model Game {
-//   id String @id @default(uuid())
-// }
 
 model UsersState {
   id            String @id @default(uuid())
@@ -150,6 +172,18 @@ enum RoomType {
   PRIVATEROOM
   PUBLICROOM
   PROTECTEDROOM
+}
+
+enum gameResults {
+  WIN
+  LOSE
+  RESIGN
+}
+
+enum GameMods {
+  YINYANG
+  CLASHOFCOLORS
+  CLASSIC
 }
 
 //*********************************************************************************//
