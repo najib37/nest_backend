@@ -26,7 +26,7 @@ import { GameModule } from './game/game.module';
     BlockModule,
     FriendsModule,
     ProfileModule,
-    GameModule,
+    // GameModule,
   ],
   controllers: [AppController],
   providers: [AppService, Logger],
