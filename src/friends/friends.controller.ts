@@ -85,9 +85,9 @@ export class FriendsController {
     @Param('id', ParseUUIDPipe) sendertId: string,
     @Req() req: AuthReq,
   ) {
-    const notif = await this.notificationService.findByRerecipient(sendertId, req.user.sub);
-    console.log(notif);
-    return notif;
+    const request = await this.notificationService.findByRerecipient(sendertId, req.user.sub, "User");
+    console.log(request);
+    return request;
   }
 
   @Delete('/request/:id')
@@ -96,7 +96,7 @@ export class FriendsController {
     @Req() req: AuthReq,
   ) {
 
-    const notif = await this.notificationService.findByRerecipient(sendertId, req.user.sub);
+    const notif = await this.notificationService.findByRerecipient(sendertId, req.user.sub, "User");
     if (!notif)
       return {
         message: "Unable To Deleted Request"
