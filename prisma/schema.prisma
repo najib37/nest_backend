@@ -3,7 +3,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  // previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -59,8 +59,9 @@ model Player {
   xp    Int
   level Float
 
-  wonGames  Game[] @relation("won games")
-  lostGames Game[] @relation("lost games")
+  wonGames    Game[]       @relation("won games")
+  lostGames   Game[]       @relation("lost games")
+  achievments Achievment[] @relation("ingame achievments")
 
   @@id([userId])
 }
@@ -81,8 +82,8 @@ model Game {
 }
 
 model Achievment {
-  id   String @id @default(uuid())
-  type String @unique // INFO: create the achievment first time an use it on all the player
+  type    String   @id @unique // INFO: create the achievment first time an use it on all the player
+  palyers Player[] @relation("ingame achievments")
 }
 
 // ________________________notification______________________
