@@ -6,6 +6,8 @@ import { PlayerModule } from './player/player.module';
 import { FriendsModule } from 'src/friends/friends.module';
 import { ProfileModule } from 'src/profile/profile.module';
 import { BlockModule } from 'src/block/block.module';
+import { AchievementsService } from './achievements/achievements.service';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
@@ -14,8 +16,9 @@ import { BlockModule } from 'src/block/block.module';
     FriendsModule,
     BlockModule,
     ProfileModule,
+    NotificationModule
   ],
   controllers: [GameController],
-  providers: [GameService],
+  providers: [GameService, AchievementsService],
 })
 export class GameModule {}

@@ -1,28 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseFilters } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { createGameDto } from './dto/create-game.dto';
 import { GameType } from './types/GameType';
 import { PlayerType } from './player/types/playerType';
+import _ from 'lodash'
+import { PlayerService } from './player/player.service';
+import { GameSelect } from './types/GameSelectType';
 
 @Injectable()
 export class GameService {
 
+  SelectGameFilelds = new GameSelect();
   constructor(
     private readonly prisma: PrismaService,
+    private readonly playerService: PlayerService,
   ) { }
 
   async create(game: createGameDto, winner?: PlayerType, loser?: PlayerType): Promise<GameType> {
+
+    const [dbWinner, dbLoser] = await Promise.all([
+      this.playerService.upsert(winner.userId, winner),
+      this.playerService.upsert(loser.userId, loser),
+    ]);
     return this.prisma.game.create({
       data: {
         ...game,
-        winner: {
-          connect: winner
-        },
-        loser: {
-          connect: loser
-        }
-      }
-      // select: {} // TODO: select data
+        winnerId: dbWinner?.userId,
+        loserId: dbLoser?.userId,
+      },
+      select: { ...this.SelectGameFilelds },
     })
   }
 
@@ -34,11 +40,14 @@ export class GameService {
     })
   }
 
-  getAllGame(game?: GameType): Promise<GameType[]> {
+  getAllGame(
+    game?: Partial<Omit<GameType, "winner" | "loser">>
+  ): Promise<GameType[]> {
     return this.prisma.game.findMany({
       where: {
         ...game
-      }
+      },
+      select: { ...this.SelectGameFilelds },
     })
   }
 
@@ -54,7 +63,7 @@ export class GameService {
           }
         ]
       },
-      // select: {} // TODO: select data
+      select: { ...this.SelectGameFilelds }
     })
   }
 
@@ -77,12 +86,7 @@ export class GameService {
           },
         ],
       },
-      select: {
-        winner: true,
-        loser: true,
-        rounds: true,
-        mode: true
-      },
+      select: { ...this.SelectGameFilelds },
       orderBy: {
         createdAt: 'asc',
       },
@@ -90,9 +94,35 @@ export class GameService {
     });
   }
 
-  serelize(rawData: GameType)  /* Promise<GameType> */ {
-    const { winner, loser, ...game } = rawData;
+  serelize(rawData: any): Promise<GameType | null>  {
+    // const { _player1, player2, ...game } = rawData;
+    // type K = [Property in keyof PlayerType];
 
+    // INFO: serelize the players 
+    const player1 = this.playerService.serelize(rawData?._player1);
+    const player2 = this.playerService.serelize(rawData?._player2);
+
+    // INFO: define the winner and the loser
+    const winner = rawData?._player1.GameResult === 'WIN!' ? player1 : player2;
+    const loser = rawData?._player1.GameResult === 'WIN!' ? player2 : player1;
+
+    // INFO: serelize the game
+    const game: GameType = {
+      mode: rawData?.GameMode,
+      rounds: rawData?.MaxRounds,
+    }
+
+
+    if (!winner || !loser || !game)
+      return ;
     return this.create(game, winner, loser);
+  }
+
+  remove(gameId: string) : Promise<GameType> {
+    return this.prisma.game.delete({
+      where: {
+        id: gameId
+      }
+    })
   }
 }
