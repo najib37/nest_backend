@@ -5,8 +5,8 @@ export interface Achievment {
 }
 
 export interface PlayerType {
-  userId: string,
-  level: number,
+  userId?: string,
+  level?: number,
   xp: number,
 
   achievments?: Achievment[],

@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UsePipes, ValidationPipe, UseFilters } from '@nestjs/common';
 import { PlayerService } from './player.service';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guards';
 import { PlayerType } from './types/playerType';
+import { PrismaErrorsFilter } from 'src/prisma/prisma-errors.filter';
 
+@UseFilters(PrismaErrorsFilter)
 @Controller('player')
 @UseGuards(JwtGuard)
 export class PlayerController {
