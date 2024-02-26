@@ -48,8 +48,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   async handleConnection(client: AuthSocket) {
-    // console.log(client.user?.sub);
-    // console.log("its me");
+
     this.connectedSockets[client.user?.sub] = client;
   }
 
@@ -60,8 +59,6 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   @SubscribeMessage('notification')
   async updateNotif(@MessageBody() notif: CreateNotificationDto) {
 
-
-    console.log("notfi = ", notif);
     if (notif || notif.id)
       return ;
 
@@ -92,14 +89,13 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     recipientId: string
   ): Promise<boolean> {
 
+    // BUG: add protection for blocked users
+    
     const notif = await this.notificationService.create(senderId, recipientId, {
       type,
       content,
       state: 'PENDING',
     })
-
-    console.log("bruuuuuuh");
-    console.log(notif);
     const recipient = this.connectedSockets[recipientId];
 
     if (recipient)

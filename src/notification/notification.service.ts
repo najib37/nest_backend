@@ -15,8 +15,8 @@ export class NotificationService {
 
   constructor(
     private readonly prisma: PrismaService,
-  ) {
-  }
+  ) { }
+
   async create(
     senderId: string,
     recipientId: string,
@@ -61,6 +61,7 @@ export class NotificationService {
   async findByRerecipient(
     senderId: string,
     recipientId: string,
+    type?: string,
     state?: NotifStateType
   ): Promise<Notification> {
     return this.prisma.notification.findFirst({
@@ -68,6 +69,7 @@ export class NotificationService {
         recipientId,
         senderId,
         state,
+        type,
       },
       select: {
         recipient: {
@@ -80,11 +82,15 @@ export class NotificationService {
     });
   }
 
-  async removeRequest(senderId: string , recipientId: string) : Promise<boolean> {
+  async removeRequest(
+    senderId: string,
+    recipientId: string,
+    type?: string,
+  ): Promise<boolean> {
     const notif: Notification = await this.findByRerecipient(senderId, recipientId);
 
     if (!notif)
-    return false;
+      return false;
 
     await this.remove(notif.id);
     return true;
@@ -97,7 +103,6 @@ export class NotificationService {
       },
       data: {
         ...updateNotificationDto,
-        // state: "READ"
       },
       select: {
         ...this.selectNotif,
