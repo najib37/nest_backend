@@ -1,9 +1,25 @@
-CLIENTUID=u-s4t2ud-af145fbbd9cc0908322a41cdd407efbfcb03d473f9483d259e7ade8ebd998398
-CLIENTSECRET=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
-LOOPBACKURL=http://localhost:3000/auth/42/callback
+POSTGRES_USER="insert postgres user"
+POSTGRES_PASSWORD="insert postgres passwd"
+POSTGRES_DB="insert postgres database name"
+
+# server variables
+
+PORT="api port"
+EXTERNAL_URL="insert external Url"
+CLIENT_URL="insert front end Url"
+
+CLIENTUID="42 network clientuid"
+CLIENTSECRET="42 network clientsecret"
 
 
-SECRET='this is the secret temp'
+LOOPBACKURL=${EXTERNAL_URL}:${PORT}/auth/42/callback
+
+SECRET='the secret to incrypt the Auth user'
+
+GOOGLEUID="google clientuid"
+GOOGLESECRET="google clientsecret"
+GOOGLELOOPBACK=${EXTERNAL_URL}:${PORT}/auth/google/redirect
+
 
 # This was inserted by `prisma init`:
 # Environment variables declared in this file are automatically made available to Prisma.
@@ -12,4 +28,4 @@ SECRET='this is the secret temp'
 # Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
 # See the documentation for all the connection string options: https://pris.ly/d/connection-strings
 
-DATABASE_URL="postgresql://hharik:urmom123@localhost:5432/42?schema=public"
+DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public"
