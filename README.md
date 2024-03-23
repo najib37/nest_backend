@@ -22,6 +22,7 @@ This is the backend for a realtime multiplayer pong game created using the follo
 check [Pong Online](https://github.com/najib37/Ponga_Online) for the whole project and the docker compose instructions
 
 ## Database Schema
+![image](https://github.com/najib37/nest_backend/assets/120307266/bfb9daf8-bd34-4b89-b9b2-c6d042003de6)
 
 ## screenshots
 ### Auth
