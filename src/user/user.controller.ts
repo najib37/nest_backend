@@ -31,11 +31,6 @@ export class UserController {
     private readonly userService: UserService,
   ) { }
 
-  @Post('/lot/') // debug
-  createMany(@Body() createUserDto: CreateUserDto[]) {
-    return this.userService.createMany(createUserDto);
-  }
-
   @Post() //debug
   create(
     @Body(ValidationPipe) createUserDto: CreateUserDto
@@ -43,7 +38,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get('/all/')
+  @Get()
   findAll(
     @Query(
       new ValidationPipe({
@@ -54,7 +49,6 @@ export class UserController {
       ParseQueryPipe
     ) { paginationQueries, searchQueries }: FormatedQueryType,
   ) {
-    console.log("recieved a request");
     return this.userService.findAll(paginationQueries);
   }
 
@@ -70,22 +64,14 @@ export class UserController {
     ) { paginationQueries }: FormatedQueryType,
     @Query('username') username?: string,
   ) {
-    // console.log("recieved request");
     const users = await this.userService.searchForUsers(paginationQueries, username);
-    console.log(users);
     return users;
   }
 
 
-  @Get()
+  @Get('/me')
   getLoggedUser(@Req() req: AuthReq) {
-    console.log("user request");
-
-    // setTimeout(() => {
-    //   return this.userService.findOne(req.user.sub || '');
-    // }, 100000)
     return this.userService.findOne(req.user.sub || '');
-    // throw InternalServerErrorException;
   }
 
   @Get(':id')
@@ -93,9 +79,7 @@ export class UserController {
     @Param('id', ParseUUIDPipe) userId: string,
     @Req() req: AuthReq,
   ) {
-
     if (!userId) return {};
-
     return this.userService.findOne(userId);
   }
 
@@ -113,16 +97,8 @@ export class UserController {
     const id = req.user?.sub;
     if (!id)
       return {};
-    console.log("patch id = ", id)
-    // console.log(id);
     return this.userService.update(id, updateUserDto);
-  } // not competed yet
-
-  @Delete("/all/") // this is very scufed so dont use it debug
-  truncate() { // dev needs to be deleted
-    return this.userService.truncate();
-  }
-
+  } 
 
   @Delete()
   remove(@Req() req: AuthReq) {

@@ -16,7 +16,7 @@ export class BlockController {
     private readonly notificationGateway: NotificationGateway
   ) { }
 
-  @Get('/all')
+  @Get('')
   getBlockList(
     @Req() req: AuthReq,
     @Query(

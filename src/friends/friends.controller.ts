@@ -20,7 +20,7 @@ export class FriendsController {
     private readonly notificationService: NotificationService
   ) { }
 
-  @Get('/all')
+  @Get()
   getAllFriends(
     @Req() req: AuthReq,
     @Query(

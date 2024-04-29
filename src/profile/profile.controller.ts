@@ -11,7 +11,7 @@ import { get } from 'http';
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) { }
 
-  @Get('')
+  @Get()
   async getProfile(
     @Req() req: AuthReq,
     @Query('username') username: string,
